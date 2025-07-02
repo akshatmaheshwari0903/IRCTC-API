@@ -1,5 +1,5 @@
 const db = require('../db');
-const TrainModel = require('../models/trainModel');
+const TrainModel = require('../models/trainModel'); 
 
 // Admin-only: Register one or multiple trains
 async function registerTrains(req, res) {
@@ -19,8 +19,20 @@ async function registerTrains(req, res) {
         return res.status(400).json({ message: 'Missing required train fields.' });
       }
 
+      if (!Number.isInteger(totalSeats) || totalSeats <= 0) {
+        throw new Error('totalSeats must be a positive integer.');
+      }
+
+      const [exists] = await db.query(
+        'SELECT id FROM trains WHERE train_number = ?',
+        [trainNumber]
+      );
+      if (exists.length) {
+        throw new Error(`Train ${trainNumber} already exists.`);
+      }
+
       const [result] = await db.query(
-        'INSERT INTO trains (train_number, source, destination, total_seats, available_seats) VALUES (?, ?, ?, ?, ?)',
+        'INSERT INTO trains (train_number, source, destination, totalSeats, availableSeats) VALUES (?, ?, ?, ?, ?)',
         [trainNumber, source, destination, totalSeats, totalSeats]
       );
 

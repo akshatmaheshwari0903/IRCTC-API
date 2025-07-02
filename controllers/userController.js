@@ -5,14 +5,35 @@ const dotenv = require("dotenv");
 
 dotenv.config();
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 // Register new user
 async function register(req, res) {
   const { username, email, password } = req.body;
 
+  if (!username || !email || !password) {
+    return res.status(400).json({
+      message: "username, email, and password are all required."
+    });
+  }
+
+  if (!EMAIL_REGEX.test(email)) {
+    return res.status(400).json({
+      message: "Invalid email format."
+    });
+  }
+
+  if (password.length < 8) {
+    return res.status(400).json({
+      message: "Password must be at least 8 characters long."
+    });
+  }
+
+
   try {
     const existingUser = await UserModel.findByEmail(email);
     if (existingUser) {
-      return res.status(400).json({ message: "Email already registered" });
+      return res.status(409).json({ message: "Email already registered" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -29,6 +50,12 @@ async function register(req, res) {
 // Login existing user
 async function login(req, res) {
   const { email, password } = req.body;
+
+  if ( !email || !password) {
+    return res.status(400).json({
+      message: "email, and password are all required."
+    });
+  }
 
   try {
     const user = await UserModel.findByEmail(email);

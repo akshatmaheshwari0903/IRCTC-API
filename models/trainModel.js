@@ -5,7 +5,7 @@ const TrainModel = {
     const seatsAvailable = seatCapacity; // initially, all seats available
     try {
       const [result] = await db.query(
-        `INSERT INTO trains (train_number, source, destination, total_seats, available_seats)
+        `INSERT INTO trains (train_number, source, destination, totalSeats, availableSeats)
          VALUES (?, ?, ?, ?, ?)`,
         [trainNum, fromStation, toStation, seatCapacity, seatsAvailable]
       );
@@ -30,7 +30,7 @@ const TrainModel = {
       const dest = destination.trim().toLowerCase();
 
       const [rows] = await db.query(
-        `SELECT train_number, source, destination, total_seats, available_seats
+        `SELECT id, train_number, source, destination, totalSeats, availableSeats
          FROM trains
          WHERE TRIM(LOWER(source)) = ? AND TRIM(LOWER(destination)) = ?`,
         [src, dest]
@@ -45,7 +45,7 @@ const TrainModel = {
   reduceAvailableSeats: async (trainId, seatsToBook) => {
     try {
       const [result] = await db.query(
-        'UPDATE trains SET available_seats = available_seats - ? WHERE id = ? AND available_seats >= ?',
+        'UPDATE trains SET availableSeats = availableSeats - ? WHERE id = ? AND availableSeats >= ?',
         [seatsToBook, trainId, seatsToBook]
       );
       return result.affectedRows > 0; // true if update successful
@@ -57,7 +57,7 @@ const TrainModel = {
   updateSeatsCount: async (trainId, newTotalSeats, newAvailableSeats) => {
     try {
       const [result] = await db.query(
-        'UPDATE trains SET total_seats = ?, available_seats = ? WHERE id = ?',
+        'UPDATE trains SET totalSeats = ?, availableSeats = ? WHERE id = ?',
         [newTotalSeats, newAvailableSeats, trainId]
       );
       return result.affectedRows > 0;

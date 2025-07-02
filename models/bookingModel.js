@@ -5,11 +5,10 @@ const BookingModel = {
     console.log('Creating booking:', { userId, trainId, seatCount });
     try {
       const insertQuery = `
-        INSERT INTO bookings (user_id, train_id, seats)
+        INSERT INTO bookings (userId, trainId, seatsBooked)
         VALUES (?, ?, ?)
       `;
       const [result] = await dbConnection.query(insertQuery, [userId, trainId, seatCount]);
-      console.log('Booking successful, ID:', result.insertId);
       return result.insertId;
     } catch (error) {
       console.error('Booking creation failed:', error.message);

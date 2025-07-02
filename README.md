@@ -46,7 +46,7 @@ API_KEY=<your-admin-api-key>
 
 ```bash
 git clone https://github.com/akshatmaheshwari0903/IRCTC-API.git
-cd IRCTC_API
+cd IRCTC-API
 ```
 
 2. Install dependencies:
@@ -64,8 +64,8 @@ USE irctc_api;
 
 CREATE TABLE users (
   id INT AUTO_INCREMENT PRIMARY KEY,
-  username VARCHAR(255),
-  email VARCHAR(255) UNIQUE,
+  username VARCHAR(255) NOT NULL,
+  email VARCHAR(255) NOT NULL UNIQUE ,
   password VARCHAR(255),
   role ENUM('user', 'admin') DEFAULT 'user',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -73,21 +73,21 @@ CREATE TABLE users (
 
 CREATE TABLE trains (
   id INT AUTO_INCREMENT PRIMARY KEY,
-  trainNumber VARCHAR(100),
-  source VARCHAR(100),
-  destination VARCHAR(100),
-  totalSeats INT,
-  availableSeats INT,
+  train_number VARCHAR(100) NOT NULL,
+  source VARCHAR(100) NOT NULL,
+  destination VARCHAR(100) NOT NULL,
+  totalSeats INT NOT NULL,
+  availableSeats INT NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE bookings (
   id INT AUTO_INCREMENT PRIMARY KEY,
-  userId INT,
-  trainId INT,
-  seatsBooked INT,
-  FOREIGN KEY (userId) REFERENCES users(id),
-  FOREIGN KEY (trainId) REFERENCES trains(id)
+  userId INT NOT NULL,
+  trainId INT NOT NULL,
+  seatsBooked INT NOT NULL,
+  FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (trainId) REFERENCES trains(id) ON DELETE CASCADE
 );
 
 ```

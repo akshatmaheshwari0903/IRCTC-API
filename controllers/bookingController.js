@@ -18,10 +18,11 @@ async function checkAvailability(req, res) {
     }
 
     const availableTrains = trains
-      .filter(train => train.available_seats > 0)
+      .filter(train => train.availableSeats > 0)
       .map(train => ({
+        Id: train.id,
         trainNumber: train.train_number,
-        availableSeats: train.available_seats
+        availableSeats: train.availableSeats
       }));
 
     res.status(200).json({
@@ -41,20 +42,25 @@ async function reserveSeat(req, res) {
   const userId = req.user.id;
   const connection = await db.getConnection();
 
+  if (!trainId || !Number.isInteger(seatsToBook) || seatsToBook <= 0) {
+    return res.status(400).json({ message: 'Required trainId or Invalid seatsToBook' });
+  }
+
   try {
     await connection.beginTransaction();
 
-    const [train] = await connection.query(
-      'SELECT total_seats, available_seats FROM trains WHERE id = ? FOR UPDATE',
+    const [rows] = await connection.query(
+      'SELECT availableSeats FROM trains WHERE id = ? FOR UPDATE',
       [trainId]
     );
-
-    if (!train.length) {
+ 
+    if (rows.length===0) {
+      
       await connection.rollback();
       return res.status(404).json({ message: 'Train not found' });
     }
 
-    const availableSeats = train[0].available_seats;
+    const availableSeats = rows[0].availableSeats;
 
     if (availableSeats < seatsToBook) {
       await connection.rollback();
@@ -62,7 +68,7 @@ async function reserveSeat(req, res) {
     }
 
     await connection.query(
-      'UPDATE trains SET available_seats = available_seats - ? WHERE id = ?',
+      'UPDATE trains SET availableSeats = availableSeats - ? WHERE id = ?',
       [seatsToBook, trainId]
     );
 
@@ -88,20 +94,19 @@ async function getAllReservations(req, res) {
     const [rows] = await db.query(
       `SELECT 
         b.id AS booking_id,
-        b.seats AS number_of_seats,
+        b.seatsBooked AS number_of_seats,
         t.train_number,
         t.source,
         t.destination
        FROM bookings b
-       JOIN trains t ON b.train_id = t.id
-       WHERE b.user_id = ?`,
+       JOIN trains t ON b.trainId = t.id
+       WHERE b.userId = ?`,
       [userId]
     );
 
     res.json(rows);
   } catch (err) {
-    console.error('Error fetching reservations:', err.message);
-    res.status(500).json({ message: 'Error fetching reservations' });
+    res.status(500).json({ message: 'Error fetching reservations' ,  error: err.message });
   }
 }
 
